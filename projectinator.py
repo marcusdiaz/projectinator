@@ -9,15 +9,39 @@ print ("Starting Projectinator")
 class Git():
     """Class to interact with git"""
 
-    def __init__(self, project):
+    def __init__(self, name):
         print("Starting init")
-        self.project = project
-        self.git_pw = keyring.get_password('github.com2','marcus.diaz@gmail.com')
-        print(self.git_pw)
+        self.name = name
+        #self.git_pw = keyring.get_password('github.com2','marcus.diaz@gmail.com')
+        self.git_pw = os.environ['GITPW']
+        self.git_user = os.environ['GITUSR']
+        self.api_token = os.environ['GITTKN']
 
-        self.r = requests.get('https://api.github.com/graphql')
+#        print("USR: " + self.git_user + " PW: " + self.git_pw)
 
-        print("Request:" + self.r.json())
+        self.s = requests.Session()
+        s = self.s
+        s.auth = (self.git_user, self.git_pw)
+
+#        s.headers.update({'x-test': 'true'})
+        # both 'x-test' and 'x-test2' are sent
+#        r = s.get('https://httpbin.org/headers', headers={'x-test2': 'true'})
+
+        s.headers.update({'Authorization': 'token %s' % self.api_token})
+
+        c_r = s.post('https://api.github.com/graphql/marcusdiaz/test3', headers=s.headers)
+        #POST /user/repos
+
+        #self.r = requests.get('https://api.github.com/graphql')
+
+        response_dict = c_r.json()
+
+        print("Keys: ")
+        print(response_dict.keys())
+
+        print(response_dict['message'])
+
+#        print(response_dict['headers'])
     
     def init():
         """Do local git init"""
@@ -42,7 +66,7 @@ class Project():
 
     def __init__(self, name):
         self.name = name
-        self.git = Git(self)
+        self.git = Git(self.name)
     
     def create(self):
         #First create a new directory with the project name
@@ -56,7 +80,7 @@ class Project():
         Path('./README.md').touch()
 
         #Create a new repo in the remote repo host (github.com)
-        self.git.createRemoteRepo()
+        #self.git.createRemoteRepo()
 
         #Do a local git init
         self.git.init()
@@ -83,7 +107,7 @@ args = parser.parse_args()
 
 if(args.command == 'create'):
     my_proj = Project(args.args[0])
-    my_proj.create()
+    #my_proj.create()
 
 
 
