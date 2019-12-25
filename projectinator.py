@@ -1,8 +1,8 @@
 import argparse
 import os
 from pathlib import Path
-import keyring
 import requests
+from github import Github
 
 print ("Starting Projectinator")
 
@@ -17,47 +17,59 @@ class Git():
         self.git_user = os.environ['GITUSR']
         self.api_token = os.environ['GITTKN']
 
-#        print("USR: " + self.git_user + " PW: " + self.git_pw)
+        self.g = Github(self.api_token)
+        
+        self.repo_exists = False
+        for repo in self.g.get_user().get_repos():
+            print(repo.name)
+            # to see all the available attributes and methods
+            #print(dir(repo))
+            if(repo.name == self.name):
+              self.repo_exists = True
 
-        self.s = requests.Session()
-        s = self.s
-        s.auth = (self.git_user, self.git_pw)
-
-#        s.headers.update({'x-test': 'true'})
-        # both 'x-test' and 'x-test2' are sent
-#        r = s.get('https://httpbin.org/headers', headers={'x-test2': 'true'})
-
-        s.headers.update({'Authorization': 'token %s' % self.api_token})
-
-        c_r = s.post('https://api.github.com/graphql/marcusdiaz/test3', headers=s.headers)
-        #POST /user/repos
-
-        #self.r = requests.get('https://api.github.com/graphql')
-
-        response_dict = c_r.json()
-
-        print("Keys: ")
-        print(response_dict.keys())
-
-        print(response_dict['message'])
-
-#        print(response_dict['headers'])
-    
-    def init():
-        """Do local git init"""
-        pass
-    
-    def createRemoteRepo():
+    def createRemoteRepo(self):
         """Create remote git repo"""
+        if(not self.repo_exists):
+            #Create new repo
+            g.get_user().create_repo(self.name)
+        else:
+            print("Repo already exists! Not creating...")
+        pass
+        
+    def init(self):
+        """Do local git init"""
+        cmd = "git init"
+        print(cmd)
+        returned_value = os.system(cmd)  # returns the exit code in unix
+        print('returned value:', returned_value)
+        pass
+    
+    def addAll(self):
+        cmd = "git add ."
+        print(cmd)
+        returned_value = os.system(cmd)  # returns the exit code in unix
+        print('returned value:', returned_value)
         pass
 
-    def addAll():
+    def commit(self):
+        cmd = "git commit -m 'Initial commit'"
+        print(cmd)
+        returned_value = os.system(cmd)  # returns the exit code in unix
+        print('returned value:', returned_value)
         pass
 
-    def commit():
+    def addRemote(self):
+        cmd = "git remote add origin https://github.com/marcusdiaz/" + self.name
+        print(cmd)
+        returned_value = os.system(cmd)  # returns the exit code in unix
+        print('returned value:', returned_value)
         pass
 
-    def push():
+    def push(self):
+        cmd = "git push -u origin master"
+        print(cmd)
+        returned_value = os.system(cmd)  # returns the exit code in unix
+        print('returned value:', returned_value)
         pass
 
 
@@ -80,21 +92,20 @@ class Project():
         Path('./README.md').touch()
 
         #Create a new repo in the remote repo host (github.com)
-        #self.git.createRemoteRepo()
+        self.git.createRemoteRepo()
 
         #Do a local git init
         self.git.init()
-
-        #Do a git add .
         self.git.addAll()
-
-        #Do git commit
         self.git.commit()
-
-        #Do git push
+        self.git.addRemote()
         self.git.push()
 
         #Start code .
+        cmd = "code ."
+        print(cmd)
+        returned_value = os.system(cmd)  # returns the exit code in unix
+        print('returned value:', returned_value)
 
         pass
 
@@ -107,9 +118,6 @@ args = parser.parse_args()
 
 if(args.command == 'create'):
     my_proj = Project(args.args[0])
-    #my_proj.create()
-
-
-
+    my_proj.create()
 
 
